@@ -4,7 +4,7 @@ import threading,socket,ssl
 import client
 
 class server(threading.Thread):
-	def __init__(self,notify_callback):
+	def __init__(self,notify_callback,recv_msg_callback):
 		threading.Thread.__init__(self)
 		#create raw server socket
 		self.sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -13,6 +13,7 @@ class server(threading.Thread):
 		self.running = True
 		self.remote_client_pool = []
 		self.notify_callback = notify_callback
+		self.recv_msg_callback = recv_msg_callback
 
 	def __del__(self):
 		self.sock.shutdown(socket.SHUT_RDWR)
@@ -23,7 +24,7 @@ class server(threading.Thread):
 			accepted_sock, address = self.sock.accept() #TODO how to use address? Or, is it useful?
 			ssl_sock = ssl.wrap_socket(accepted_sock,server_side=True,ssl_version=ssl.PROTOCOL_TLSv1)
 			try:
-				new_client = client.client(ssl_sock)
+				new_client = client.client(ssl_sock,self.recv_msg_callback)
 				self.remote_client_pool.append(new_client)
 				self.notify_callback(new_client)
 			except:	#May be, the memory has exhausted
