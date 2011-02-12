@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<interface>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy project-wide -->
+  <object class="GtkWindow" id="MainForm">
+    <property name="title" translatable="yes">pycommunication</property>
+    <signal name="destroy" handler="on_MainForm_destroy"/>
+    <child>
+      <placeholder/>
+    </child>
+  </object>
+</interface>
