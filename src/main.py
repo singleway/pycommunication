@@ -6,8 +6,11 @@ class MainWindow():
 		talk_history = self.builder.get_object("talk_history")
 		text_buffer = talk_history.get_buffer()
 		formated_msg = "%s  %s\n" % (datetime.datetime.today().strftime("%c"), message)
-		print formated_msg
 		text_buffer.insert(text_buffer.get_end_iter(),formated_msg)
+		#scroll window
+		scroll_bar = self.builder.get_object("scrolledwindow").get_vscrollbar()
+		scroll_adj = scroll_bar.get_adjustment()
+		scroll_bar.set_value(scroll_adj.upper - scroll_adj.page_size)
 
 	def on_MainForm_destroy(self,widget):
 		gtk.main_quit()
