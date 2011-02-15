@@ -1,6 +1,6 @@
 #coding=utf-8
 
-import threading,socket,ssl
+import threading,socket
 import client
 
 class server(threading.Thread):
@@ -23,14 +23,15 @@ class server(threading.Thread):
 	def run(self):
 		while(self.running):	#FIXME how to make this flage working
 			accepted_sock, address = self.sock.accept() #TODO how to use address? Or, is it useful?
-			ssl_sock = ssl.wrap_socket(accepted_sock,server_side=True,ssl_version=ssl.PROTOCOL_TLSv1)
 			try:
-				new_client = client.client(ssl_sock,self.recv_msg_callback,self.gui_instance)
+				new_client = client.client(self.recv_msg_callback,self.gui_instance,accepted_sock)
+				new_client.start()
 				self.remote_client_pool.append(new_client)
 				self.notify_callback(new_client,self.gui_instance)
-			except:	#May be, the memory has exhausted
-				ssl_sock.shutdown(socket.SHUT_RDWR)
-				ssl_sock.close()
+			except Exception,data:	#May be, the memory has exhausted
+				print Exception,":",data
+				accepted_sock.shutdown(socket.SHUT_RDWR)
+				accepted_sock.close()
 
 	def stop(self):
 		self.running = False

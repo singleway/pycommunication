@@ -1,5 +1,10 @@
 #coding=utf-8
-import gtk,datetime
+import gtk,datetime,server,client
+
+def on_new_client_callback(new_client,gui):
+	gui.on_new_client(new_client)
+def on_recv_msg_callback(client,msg,gui):
+	gui.on_recv_msg(client,msg)
 
 class MainWindow():
 	def __append_talk_history(self,message):
@@ -16,6 +21,9 @@ class MainWindow():
 		gtk.main_quit()
 
 	def on_connect_btn_clicked(self,widget):
+		self.client = client.client(on_recv_msg_callback,self)
+		self.client.start()
+		self.client.do_handshake(0,"nickname") #TODO use the real information
 		connect_vbox = self.builder.get_object("connect_vbox")
 		connect_vbox.hide()
 
@@ -30,12 +38,29 @@ class MainWindow():
 		text_buffer = text_input.get_buffer()
 		msg = text_buffer.get_text(text_buffer.get_start_iter(),text_buffer.get_end_iter());
 		text_buffer.set_text("")
+		self.client.send_message(msg)
 		self.__append_talk_history(msg)
+		
+	def on_new_client(self,new_client):
+		self.client = new_client
+		self.__append_talk_history("new client")
+		connect_vbox = self.builder.get_object("connect_vbox")
+		connect_vbox.hide()
+	def on_recv_msg(self,client,msg):
+		self.__append_talk_history(msg)
+		
+	def on_new_client_callback(new_client,gui):
+		gui.on_new_client(new_client)
+	def on_recv_msg_callback(client,msg,gui):
+		gui.on_recv_msg(client,msg)
 
 	def __init__(self):
 		#read glade file
 		self.builder = gtk.Builder()
 		self.builder.add_from_file("rad_gui.glade")
+		#init server
+		self.server = server.server(self,on_new_client_callback,on_recv_msg_callback)
+		self.server.start()
 		#get the main window, and connect all eventes
 		self.window = self.builder.get_object("MainForm")
 		if self.window:
@@ -43,5 +68,8 @@ class MainWindow():
 			self.window.show()
 
 if __name__ == '__main__':
+	gtk.gdk.threads_init()
 	main_window = MainWindow()
+	gtk.gdk.threads_enter()
 	gtk.main()
+	gtk.gdk.threads_leave()
