@@ -14,6 +14,7 @@ class server(threading.Thread):
 		#add port-mapping to router
 		self.upnp_ins = upnp.UPnP()
 		self.upnp_ins.add_port(server.DEFAULT_PORT,'TCP',server.DEFAULT_PORT)
+		self.upnp_ins.start()
 		#init class data field
 		self.running = True
 		self.remote_client_pool = []
