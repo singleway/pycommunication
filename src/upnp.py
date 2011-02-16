@@ -99,7 +99,7 @@ class UPnP(threading.Thread):
         <NewInternalPort>%d</NewInternalPort>\r\n\
         <NewInternalClient>%s</NewInternalClient>\r\n\
         <NewEnabled>1</NewEnabled>\r\n\
-        <NewPortMappingDescription>upnp.py</NewPortMappingDescription>\r\n\
+        <NewPortMappingDescription>pycommunication</NewPortMappingDescription>\r\n\
         <NewLeaseDuration>0</NewLeaseDuration>\r\n' % (ExternalPort,Protocol,InternalPort,InternalClient)
         control_doc = '<?xml version="1.0" encoding="utf-8"?>\r\n\
         <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\r\n\
