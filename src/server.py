@@ -1,15 +1,20 @@
 #coding=utf-8
 
 import threading,socket
-import client
+import client,upnp
 
 class server(threading.Thread):
+	DEFAULT_PORT = 51000
 	def __init__(self,gui_instance,notify_callback,recv_msg_callback):
 		threading.Thread.__init__(self)
 		#create raw server socket
 		self.sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-		self.sock.bind(('',51000))
+		self.sock.bind(('',server.DEFAULT_PORT))
 		self.sock.listen(1)
+		#add port-mapping to router
+		self.upnp_ins = upnp.UPnP()
+		self.upnp_ins.add_port(server.DEFAULT_PORT,'TCP',server.DEFAULT_PORT)
+		#init class data field
 		self.running = True
 		self.remote_client_pool = []
 		self.gui_instance = gui_instance
@@ -19,6 +24,7 @@ class server(threading.Thread):
 	def __del__(self):
 		self.sock.shutdown(socket.SHUT_RDWR)
 		self.sock.close()
+		self.upnp_ins.del_port(server.DEFAULT_PORT,'TCP')
 
 	def run(self):
 		while(self.running):	#FIXME how to make this flage working
