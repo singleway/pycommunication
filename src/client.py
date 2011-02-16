@@ -18,10 +18,7 @@ class client(threading.Thread):
 			self.sock = sock
 		self.recv_msg_callback = recv_msg_callback
 		self.gui_instance = gui_instance
-
-	def __del__(self):
-		self.sock.shutdown(socket.SHUT_RDWR)
-		self.sock.close()
+		self.running = True
 
 	def do_handshake(self,id,nickname):
 		#send handshake
@@ -33,7 +30,7 @@ class client(threading.Thread):
 	def send_message(self,message):
 		#encode message
 		message = client.commond_key.encrypt(message)
-		
+
 		#send message
 		msg_header_length = 4*2+len(message)
 		msg_header_type = client.MSG_TYPE_MESSAGE
@@ -41,7 +38,7 @@ class client(threading.Thread):
 		self.sock.send(msg_bin)
 
 	def run(self):
-		while True:
+		while self.running:
 			msg_header_bin = self.sock.recv(struct.calcsize("!II"))
 			msg_header_length, msg_header_type = struct.unpack("!II", msg_header_bin)
 			bin_length = msg_header_length - struct.calcsize("!II")
@@ -55,4 +52,8 @@ class client(threading.Thread):
 				msg = client.commond_key.decrypt(msg)
 				self.recv_msg_callback(self,msg,self.gui_instance)
 
-
+	def stop(self):
+		self.running = False
+		self.sock.shutdown(socket.SHUT_RDWR)
+		self.sock.close()
+		self.join()

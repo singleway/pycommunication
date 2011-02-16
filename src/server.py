@@ -1,7 +1,7 @@
 #coding=utf-8
 
 import threading,socket
-import client,upnp
+import client,upnp,time
 
 class server(threading.Thread):
 	DEFAULT_PORT = 51000
@@ -13,8 +13,9 @@ class server(threading.Thread):
 		self.sock.listen(1)
 		#add port-mapping to router
 		self.upnp_ins = upnp.UPnP()
-		self.upnp_ins.add_port(server.DEFAULT_PORT,'TCP',server.DEFAULT_PORT)
 		self.upnp_ins.start()
+		time.sleep(1)
+		self.upnp_ins.add_port(server.DEFAULT_PORT,'TCP',server.DEFAULT_PORT)
 		#init class data field
 		self.running = True
 		self.remote_client_pool = []
@@ -23,8 +24,6 @@ class server(threading.Thread):
 		self.recv_msg_callback = recv_msg_callback
 
 	def __del__(self):
-		self.sock.shutdown(socket.SHUT_RDWR)
-		self.sock.close()
 		self.upnp_ins.del_port(server.DEFAULT_PORT,'TCP')
 
 	def run(self):
@@ -42,4 +41,6 @@ class server(threading.Thread):
 
 	def stop(self):
 		self.running = False
+		self.sock.shutdown(socket.SHUT_RDWR)
+		self.sock.close()
 		self.join()

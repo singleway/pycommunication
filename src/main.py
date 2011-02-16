@@ -40,7 +40,7 @@ class MainWindow():
 		text_buffer.set_text("")
 		self.client.send_message(msg)
 		self.__append_talk_history(msg)
-		
+
 	def on_new_client(self,new_client):
 		self.client = new_client
 		self.__append_talk_history("new client")
@@ -48,7 +48,7 @@ class MainWindow():
 		connect_vbox.hide()
 	def on_recv_msg(self,client,msg):
 		self.__append_talk_history(msg)
-		
+
 	def on_new_client_callback(new_client,gui):
 		gui.on_new_client(new_client)
 	def on_recv_msg_callback(client,msg,gui):
@@ -67,9 +67,13 @@ class MainWindow():
 			self.builder.connect_signals(self)
 			self.window.show()
 
+	def __del__(self):
+		self.server.stop()
+
 if __name__ == '__main__':
 	gtk.gdk.threads_init()
 	main_window = MainWindow()
 	gtk.gdk.threads_enter()
 	gtk.main()
 	gtk.gdk.threads_leave()
+	del main_window
