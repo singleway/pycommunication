@@ -1,6 +1,7 @@
 #coding=utf-8
 
-import threading,socket,struct,pyDes
+import threading,socket,struct,select
+import pyDes
 
 class client(threading.Thread):
 
@@ -19,6 +20,10 @@ class client(threading.Thread):
 		self.recv_msg_callback = recv_msg_callback
 		self.gui_instance = gui_instance
 		self.running = True
+		
+	def __del__(self):
+		self.sock.shutdown(socket.SHUT_RDWR)
+		self.sock.close()
 
 	def do_handshake(self,id,nickname):
 		#send handshake
@@ -39,21 +44,21 @@ class client(threading.Thread):
 
 	def run(self):
 		while self.running:
-			msg_header_bin = self.sock.recv(struct.calcsize("!II"))
-			msg_header_length, msg_header_type = struct.unpack("!II", msg_header_bin)
-			bin_length = msg_header_length - struct.calcsize("!II")
-			msg_bin = self.sock.recv(bin_length)
-			if client.MSG_TYPE_HANDSHAKE == msg_header_type:
-				s_length = bin_length - 4
-				self.remote_id,self.remote_nickname = struct.unpack("!I%ds"%s_length, msg_bin)
-			elif client.MSG_TYPE_MESSAGE == msg_header_type:
-				msg = struct.unpack("!%ds"%bin_length, msg_bin)[0]
-				#decode message
-				msg = client.commond_key.decrypt(msg)
-				self.recv_msg_callback(self,msg,self.gui_instance)
+			sock_read,sock_write,sock_error = select.select([self.sock],[],[],1)
+			if sock_read:
+				msg_header_bin = self.sock.recv(struct.calcsize("!II"))
+				msg_header_length, msg_header_type = struct.unpack("!II", msg_header_bin)
+				bin_length = msg_header_length - struct.calcsize("!II")
+				msg_bin = self.sock.recv(bin_length)
+				if client.MSG_TYPE_HANDSHAKE == msg_header_type:
+					s_length = bin_length - 4
+					self.remote_id,self.remote_nickname = struct.unpack("!I%ds"%s_length, msg_bin)
+				elif client.MSG_TYPE_MESSAGE == msg_header_type:
+					msg = struct.unpack("!%ds"%bin_length, msg_bin)[0]
+					#decode message
+					msg = client.commond_key.decrypt(msg)
+					self.recv_msg_callback(self,msg,self.gui_instance)
 
 	def stop(self):
 		self.running = False
-		self.sock.shutdown(socket.SHUT_RDWR)
-		self.sock.close()
 		self.join()

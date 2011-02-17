@@ -9,6 +9,7 @@ import xml.dom.minidom
 class UPnP(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
+        self.daemon = True
         self.ctrl_url = ''
         self.service_type = ''
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -30,12 +31,7 @@ class UPnP(threading.Thread):
         return data
 
     def __get_local_ip(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.connect(('baidu.com', 0))
-        ip,port = sock.getsockname()
-        sock.shutdown(socket.SHUT_RDWR)
-        sock.close()
-        return ip
+        return socket.gethostbyname(socket.gethostname())
 
     def get_port_map(self,PortMappingIndex):
         if self.ctrl_url == '':
@@ -93,6 +89,7 @@ class UPnP(threading.Thread):
 
     def add_port(self,ExternalPort,Protocol,InternalPort):
         if self.ctrl_url == '':
+            print "Your router doesn't support UPnP."
             return ''
         InternalClient = self.__get_local_ip()
         print InternalClient

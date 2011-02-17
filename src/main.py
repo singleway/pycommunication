@@ -18,6 +18,7 @@ class MainWindow():
 		scroll_bar.set_value(scroll_adj.upper - scroll_adj.page_size)
 
 	def on_MainForm_destroy(self,widget):
+		self.server.stop()
 		gtk.main_quit()
 
 	def on_connect_btn_clicked(self,widget):
@@ -67,13 +68,9 @@ class MainWindow():
 			self.builder.connect_signals(self)
 			self.window.show()
 
-	def __del__(self):
-		self.server.stop()
-
 if __name__ == '__main__':
 	gtk.gdk.threads_init()
-	main_window = MainWindow()
 	gtk.gdk.threads_enter()
+	main_window = MainWindow()
 	gtk.main()
 	gtk.gdk.threads_leave()
-	del main_window
